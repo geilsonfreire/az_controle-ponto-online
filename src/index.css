@@ -1,0 +1,116 @@
+/* Estilo base do Tailwind CSS */
+@layer theme, base, components, utilities;
+@import "tailwindcss";
+
+
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+      margin: 0;
+      padding: 0;
+  }
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+      box-sizing: border-box;
+      border: 0 solid;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+      font-size: inherit;
+      font-weight: inherit;
+  }
+
+  ol,
+  ul,
+  menu {
+      list-style: none;
+  }
+
+  img,
+  svg,
+  video,
+  canvas,
+  audio,
+  iframe,
+  embed,
+  object {
+    display: block;
+  }
+
+  img,
+  video {
+      max-width: 100%;
+      height: auto;
+  }
+}
+
+
+
+/* animação de entrada (fade + subir) */
+@keyframes fadeUp {
+    from {
+        transform: translateY(18px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* batida de coração */
+@keyframes heartbeat {
+    0% {
+        transform: scale(1);
+    }
+
+    14% {
+        transform: scale(1.02);
+    }
+
+    28% {
+        transform: scale(1);
+    }
+
+    42% {
+        transform: scale(1.05);
+    }
+
+    70% {
+        transform: scale(1);
+    }
+}
+
+/* classes utilitárias para usar no JSX */
+.logo-enter {
+    animation: fadeUp 600ms cubic-bezier(.22, .9, .35, 1) both;
+}
+
+.logo-beat {
+    transform-origin: center;
+    animation: heartbeat 1.25s ease-in-out 700ms infinite;
+}
+
+/* Estilos globais */
