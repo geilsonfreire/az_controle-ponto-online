@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react-swc';
 
 export default defineConfig({
     plugins: [react()],
+    base: '/az_controle-ponto-online/',
     build: {
         outDir: 'dist',
     },
