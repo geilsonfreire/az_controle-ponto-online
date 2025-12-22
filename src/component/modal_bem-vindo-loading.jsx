@@ -14,7 +14,7 @@ const ModalBemVindoLoading = ({ onClose }) => {
         // Adiciona listener para fechar o modal automaticamente
         const timer = setTimeout(() => {
             onClose();
-        }, 1000); 
+        }, 3000); // 3000ms
         return () => clearTimeout(timer);
     }, [onClose]);
 

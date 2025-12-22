@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import {useNavigate} from 'react-router-dom';
 
 // Import LDRS
-import { Helix, Infinity } from 'ldrs/react';
+import { Helix} from 'ldrs/react';
 import 'ldrs/react/Helix.css';
 
 // Import Assests
@@ -17,11 +17,10 @@ const Loading = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // mostra o modal após 3 segundos
         const t = setTimeout(() => {
             console.log('ativando modal');
             setShowModal(true);
-        }, 2000);
+        }, 2000); // 2000ms
         return () => clearTimeout(t);
     }, []);
 
