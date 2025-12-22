@@ -1,5 +1,5 @@
 // Import Bibliotecas React
-import React from "react";
+import {useEffect} from "react";
 
 // Import Assests
 import Fundo from '../assets/img/fundo.webp';
@@ -10,6 +10,14 @@ import 'ldrs/react/Infinity.css'
 
 
 const ModalBemVindoLoading = ({ onClose }) => {
+    useEffect(() => {
+        // Adiciona listener para fechar o modal automaticamente
+        const timer = setTimeout(() => {
+            onClose();
+        }, 10000); // fecha após 10 segundos
+        return () => clearTimeout(timer);
+    }, [onClose]);
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center shadow-xl">
             {/* overlay */}
@@ -67,15 +75,6 @@ const ModalBemVindoLoading = ({ onClose }) => {
                         />
                     </div>
 
-                    {/* rodapé com botão fechar sobre o fundo */}
-                    <div className="px-6 py-6 flex justify-end">
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 rounded-md bg-yellow-500 text-black hover:bg-yellow-600 transition"
-                        >
-                            Fechar
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
