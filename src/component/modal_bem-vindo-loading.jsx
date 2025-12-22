@@ -37,7 +37,7 @@ const ModalBemVindoLoading = ({ onClose }) => {
                         <img
                             aria-hidden="true"
                             className="mx-auto max-w-full w-[90%] sm:w-[70%] md:w-[60%] mt-3"
-                            src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=FFFFFF&width=500&lines=Faça+seu+registro+de+Rifa+AC+Online."
+                            src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=FFFFFF&width=500&lines=Faça+seu+registro+de+PONTO+Aqui!."
                             alt="Seja bem-vindo(a) a AZ Controle de Ponto!"
                         />
 
