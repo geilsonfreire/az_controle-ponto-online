@@ -1,5 +1,6 @@
 // Import Bibliotecas React
 import { useEffect, useState } from 'react';
+import {useNavigate} from 'react-router-dom';
 
 // Import LDRS
 import { Helix, Infinity } from 'ldrs/react';
@@ -13,15 +14,21 @@ import ModalBemVindoLoading from '../component/modal_bem-vindo-loading';
 
 const Loading = () => {
     const [showModal, setShowModal] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         // mostra o modal após 3 segundos
         const t = setTimeout(() => {
             console.log('ativando modal');
             setShowModal(true);
-        }, 3000);
+        }, 2000);
         return () => clearTimeout(t);
     }, []);
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        navigate('/home'); // Navega para a página home após fechar o modal
+    };
 
     return (
         <div
@@ -41,7 +48,7 @@ const Loading = () => {
             </div>
             {/* modal sobreposto (aparece depois do timeout) */}
             {showModal && (
-                <ModalBemVindoLoading onClose={() => setShowModal(false)} />
+                <ModalBemVindoLoading onClose={handleCloseModal} />
             )}
         </div>
     );
