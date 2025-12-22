@@ -3,7 +3,11 @@ import React from "react";
 
 // Import Assests
 import Fundo from '../assets/img/fundo.webp';
-import Person from '../assets/img/person.webp';
+import Logo from '../assets/img/Logo.webp';
+
+import { Infinity } from 'ldrs/react'
+import 'ldrs/react/Infinity.css'
+
 
 const ModalBemVindoLoading = ({ onClose }) => {
     return (
@@ -13,13 +17,13 @@ const ModalBemVindoLoading = ({ onClose }) => {
                 className="absolute inset-0 bg-black/40 backdrop-blur-sm shadow-xl"
                 onClick={onClose}
             />
-            
+
             {/* modal box: 80% largura e 80% altura da viewport */}
             <div
                 className="relative z-10 w-4/5 h-[80vh] rounded-xl overflow-hidden shadow-xl"
                 role="dialog"
                 aria-modal="true"
-                
+
             >
                 {/* fundo com imagem cobrindo todo o modal */}
                 <div
@@ -33,17 +37,33 @@ const ModalBemVindoLoading = ({ onClose }) => {
                         <img
                             aria-hidden="true"
                             className="mx-auto max-w-full w-[90%] sm:w-[70%] md:w-[60%] mt-3"
-                            src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=FFFFFF&width=500&lines=Obrigado+por+visitar+a+Rifa+AC+Online."
+                            src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=FFFFFF&width=500&lines=Faça+seu+registro+de+Rifa+AC+Online."
                             alt="Seja bem-vindo(a) a AZ Controle de Ponto!"
                         />
-                        
+
                     </div>
-                    {/* Img do personagem do modal */}
-                    <div>
+
+                    <div className="flex flex-col items-center gap-6 justify-center grow">
+                        {/* Logo animada */}
                         <img
-                            className="mx-auto max-w-full h-auto w-[60%] sm:w-[50%] md:w-[40%] mt-2 drop-shadow-lg"
-                            src={Person}                            alt="Personagem de boas-vindas"
-                            
+                            src={Logo}
+                            alt="AZ Controle de Ponto Logo"
+                            className="
+                            w-32 sm:w-36 md:w-40 lg:w-48 xl:w-56 2xl:w-64 
+                            h-auto mb-4 pb-2
+                            animate-pulse
+                            brightness-110
+                            logo-enter logo-beat"
+                        />
+                        {/* Loader Infinity */}
+                        
+                        <Infinity
+                            size="80"
+                            stroke="4"
+                            strokeLength="0.15"
+                            bgOpacity="0.1"
+                            speed="1.3"
+                            color="#FFFC00"
                         />
                     </div>
 
@@ -51,7 +71,7 @@ const ModalBemVindoLoading = ({ onClose }) => {
                     <div className="px-6 py-6 flex justify-end">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 rounded-md bg-pink-500 text-white hover:bg-pink-600 transition"
+                            className="px-4 py-2 rounded-md bg-yellow-500 text-black hover:bg-yellow-600 transition"
                         >
                             Fechar
                         </button>
