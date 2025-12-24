@@ -1,5 +1,5 @@
 // Importando Componentes / Bibliotecas React
-import { BrowserRouter as Router } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
 
 //Importando Componentes / Páginas
 import AppRoutes from './routes/routes';
