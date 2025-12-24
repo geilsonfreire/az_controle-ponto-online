@@ -5,6 +5,10 @@ import 'ldrs/react/Helix.css';
 import { toast } from 'react-toastify';
 
 // Importando Componentes / Páginas
+import { buscarRegistrosPonto, enviarRegistroPonto, atualizarRegistroPonto } from '../services/apiService';
+import { buscarFuncionarios } from '../services/funcionarioService';
+
+
 
 const Home = () => {
     // Estados
@@ -12,6 +16,8 @@ const Home = () => {
     const [showBiometriaButton, setShowBiometriaButton] = useState(false); 
     const [showCamera, setShowCamera] = useState(false); 
     const [isLoading, setIsLoading] = useState(false); 
+    const [nomeFuncionario, setNomeFuncionario] = useState('');
+
 
     // Refs
     const videoRef = useRef(null);
@@ -38,12 +44,38 @@ const Home = () => {
     };
 
     // Passo 1: Função para enviar matrícula
-    const handleEnviarMatricula = () => {
+    const handleEnviarMatricula = async () => {
         if (matricula.length < 4) {
             toast.error('Matrícula deve ter pelo menos 4 dígitos.');
             return;
         }
-        setShowBiometriaButton(true);
+
+        try {
+            setIsLoading(true);
+
+            const funcionarios = await buscarFuncionarios();
+
+            const funcionarioEncontrado = funcionarios.find(
+                (f) => String(f.matricula) === String(matricula)
+            );
+
+            if (!funcionarioEncontrado) {
+                toast.error('Matrícula não encontrada. Procure o RH.');
+                setNomeFuncionario('');
+                return;
+            }
+
+            // ✅ Matrícula válida
+            setNomeFuncionario(funcionarioEncontrado.nome);
+            toast.success(`Seja bem-vindo, ${funcionarioEncontrado.nome}!`);
+            setShowBiometriaButton(true);
+
+        } catch (error) {
+            console.error(error);
+            toast.error('Erro ao validar matrícula.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // Passo 2: Função para iniciar biometria
@@ -74,44 +106,90 @@ const Home = () => {
         }
     }, [showCamera]);
 
-    const handleTirarFoto = () => {
-        const canvas = canvasRef.current;
-        const video = videoRef.current;
-        const context = canvas.getContext('2d');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Função para comparar datas (ignora horário)
+    const isSameDay = (date1, date2) => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        return (
+            d1.getFullYear() === d2.getFullYear() &&
+            d1.getMonth() === d2.getMonth() &&
+            d1.getDate() === d2.getDate()
+        );
+    };
 
-        // 📌 Data/hora única do registro
-        const dataHoraRegistro = getNowISO();
 
-        // Captura da imagem
-        const imagemBase64 = canvas.toDataURL('image/jpeg');
+    // 📸 Capturar foto e enviar
+    const handleTirarFoto = async () => {
+        try {
+            setIsLoading(true);
 
-        // Finaliza câmera
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      
+            // 📸 Captura da imagem
+            const canvas = canvasRef.current;
+            const video = videoRef.current;
+            const context = canvas.getContext('2d');
 
-        setShowCamera(false);
-        setIsLoading(true);
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0);
 
-        
-        // 📦 Payload FINAL para backend
-        const payload = {
-            matricula,
-            dataHora: dataHoraRegistro,
-            imagemBase64,
-        };
+            const agora = getNowISO();
+            const imagemBase64 = canvas.toDataURL('image/jpeg');
 
-        console.log('📦 Payload para backend:', payload);
+            // 🛑 Finaliza câmera
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+            setShowCamera(false);
 
-        // Simulação de envio
-        setTimeout(() => {
-            setIsLoading(false);
-            toast.success('Registro realizado com sucesso!');
+            // 🔍 Buscar registros de ponto
+            const registros = await buscarRegistrosPonto();
+
+            // 🔎 Registro do dia do funcionário
+            const registroHoje = registros.find(r =>
+                String(r.Matricula) === String(matricula) &&
+                r.data_hora_inicio &&
+                isSameDay(r.data_hora_inicio, agora)
+            );
+
+            // 🧠 DECISÃO
+            if (!registroHoje) {
+                // ✅ PRIMEIRO REGISTRO (ENTRADA)
+                await enviarRegistroPonto({
+                    Matricula: matricula,
+                    data_hora_inicio: agora,
+                    data_hora_fim: '',
+                    foto_registro: imagemBase64,
+                });
+
+                toast.success('Entrada registrada com sucesso!');
+
+            } else if (!registroHoje.data_hora_fim) {
+                // ✅ SEGUNDO REGISTRO (SAÍDA)
+                await atualizarRegistroPonto(
+                    registroHoje._lineNumber,
+                    {
+                        data_hora_fim: agora,
+                        foto_registro: imagemBase64,
+                    }
+                );
+                
+                toast.success('Saída registrada com sucesso!');
+
+            } else {
+                // ❌ JÁ REGISTROU ENTRADA E SAÍDA
+                toast.error('Ponto do dia já foi registrado.');
+            }
+
+            // 🔄 Reset
             setMatricula('');
-        }, 3000);
+            setNomeFuncionario('');
+            setShowBiometriaButton(false);
+
+        } catch (error) {
+            console.error(error);
+            toast.error('Erro ao registrar ponto.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -122,7 +200,9 @@ const Home = () => {
 
             {!showBiometriaButton && !showCamera && !isLoading && (
                 <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
-                    <label htmlFor="matricula" className="block text-1x1 font-medium">Registro de Ponto</label>
+                    <label className="block font-medium mb-2">
+                        Registro de Ponto
+                    </label>
                     <input
                         type="text"
                         value={matricula}
@@ -140,12 +220,18 @@ const Home = () => {
             )}
 
             {showBiometriaButton && (
-                <button
-                    onClick={handleIniciarBiometria}
-                    className="bg-green-600 text-white py-3 px-6 rounded-lg"
-                >
-                    Iniciar Biometria Facial
-                </button>
+                <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm text-center">
+                    <p className="text-lg">Seja bem-vindo,</p>
+                    <p className="text-xl font-bold text-green-600 mb-4">
+                        {nomeFuncionario}
+                    </p>
+                    <button
+                        onClick={handleIniciarBiometria}
+                        className="bg-green-600 text-white py-3 px-6 rounded-lg"
+                    >
+                        Iniciar Biometria Facial
+                    </button>
+                </div>
             )}
 
             {showCamera && (
@@ -169,7 +255,7 @@ const Home = () => {
 
             {isLoading && (
                 <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-                    <p className="mb-4">Processando biometria...</p>
+                    <p className="mb-4">Processando...</p>
                     <Helix size="50" speed="2.0" color="#FFFC00" />
                 </div>
             )}
