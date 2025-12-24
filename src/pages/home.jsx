@@ -5,9 +5,12 @@ import 'ldrs/react/Helix.css';
 import { toast } from 'react-toastify';
 
 // Importando Componentes / Páginas
-import { buscarRegistrosPonto, enviarRegistroPonto, atualizarRegistroPonto } from '../services/apiService';
-import { buscarFuncionarios } from '../services/funcionarioService';
-
+import { 
+    buscarRegistrosPonto, 
+    enviarRegistroPonto, 
+    atualizarRegistroPonto, 
+    buscarFuncionarios 
+} from '../services/apiService';
 
 
 const Home = () => {
@@ -171,7 +174,7 @@ const Home = () => {
                         foto_registro: imagemBase64,
                     }
                 );
-                
+
                 toast.success('Saída registrada com sucesso!');
 
             } else {
