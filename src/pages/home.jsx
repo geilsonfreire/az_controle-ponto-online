@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { Helix } from 'ldrs/react'; 
 import 'ldrs/react/Helix.css';
+import {toast } from 'react-toastify';
 
 // Importando Componentes / Páginas
 
@@ -10,7 +11,7 @@ const Home = () => {
     const [showBiometriaButton, setShowBiometriaButton] = useState(false); // Passo 2: Controla se mostra botão biometria
     const [showCamera, setShowCamera] = useState(false); // Passo 3: Controla se mostra câmera
     const [isLoading, setIsLoading] = useState(false); // Passo 4: Controla loading
-    const [message, setMessage] = useState(''); // Passo 5: Mensagem de sucesso/falha
+    
     const videoRef = useRef(null); // Referência para o elemento video
     const canvasRef = useRef(null); // Referência para capturar a foto
 
@@ -23,24 +24,23 @@ const Home = () => {
     // Passo 1: Função para enviar matrícula
     const handleEnviarMatricula = () => {
         if (matricula.length < 4) {
-            setMessage('Matrícula deve ter pelo menos 4 dígitos.');
+            toast.error('Matrícula deve ter pelo menos 4 dígitos.');
             return;
         }
         setShowBiometriaButton(true);
-        setMessage(''); // Limpa mensagem
     };
 
     // Passo 2: Função para iniciar biometria
     const handleIniciarBiometria = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: true // Remova facingMode para usar a câmera padrão
+                video: true 
             });
             videoRef.current.srcObject = stream;
             setShowCamera(true);
             setShowBiometriaButton(false);
         } catch (error) {
-            setMessage('Erro ao acessar a câmera. Permita o acesso nas configurações do navegador e tente novamente.');
+            toast.error('Erro ao acessar a câmera. Permita o acesso nas configurações do navegador e tente novamente.');
             console.error(error);
         }
     };
@@ -60,9 +60,13 @@ const Home = () => {
 
         setIsLoading(true);
         setTimeout(() => {
-            const sucesso = Math.random() > 0.3; // 70% sucesso para simulação
+            const sucesso = Math.random() > 0.3;
             setIsLoading(false);
-            setMessage(sucesso ? 'Sucesso! Registro realizado.' : 'Falha! Tente novamente.');
+            if (sucesso) {
+                toast.success('Sucesso! Registro realizado.'); // Substitua setMessage
+            } else {
+                toast.error('Falha! Tente novamente.'); // Substitua setMessage
+            }
             setMatricula('');
             setShowBiometriaButton(false);
         }, 3000);
@@ -134,18 +138,6 @@ const Home = () => {
                 </div>
             )}
 
-            {/* Passo 5: Mensagem */}
-            {message && (
-                <div className={`bg-white p-6 rounded-xl shadow-lg w-full max-w-sm sm:max-w-md text-center ${message.includes('Sucesso') ? 'border-green-500' : 'border-red-500'} border-2`}>
-                    <p className={`text-lg font-bold ${message.includes('Sucesso') ? 'text-green-600' : 'text-red-600'}`}>{message}</p>
-                    <button
-                        onClick={() => setMessage('')}
-                        className="mt-4 bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-200"
-                    >
-                        OK
-                    </button>
-                </div>
-            )}
         </div>
     );
 }
