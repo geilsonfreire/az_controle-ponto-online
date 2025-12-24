@@ -117,11 +117,12 @@ const Home = () => {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 p-4">
             <h1 className="text-2xl font-bold mb-6 text-center">
-                Registro de Ponto - AZ Controle
+                AZ Comunicação Visual Ltda
             </h1>
 
             {!showBiometriaButton && !showCamera && !isLoading && (
                 <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
+                    <label htmlFor="matricula" className="block text-1x1 font-medium">Registro de Ponto</label>
                     <input
                         type="text"
                         value={matricula}
