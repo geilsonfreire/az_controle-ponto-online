@@ -7,13 +7,29 @@ import { toast } from 'react-toastify';
 // Importando Componentes / Páginas
 
 const Home = () => {
+    // Estados
     const [matricula, setMatricula] = useState(''); 
     const [showBiometriaButton, setShowBiometriaButton] = useState(false); 
     const [showCamera, setShowCamera] = useState(false); 
     const [isLoading, setIsLoading] = useState(false); 
-    const streamRef = useRef(null); // Referência para o stream da câmera
-    const videoRef = useRef(null); // Referência para o elemento video
-    const canvasRef = useRef(null); // Referência para capturar a foto
+
+    // Refs
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
+    const streamRef = useRef(null);
+
+    // Função para obter timestamp atual em ISO
+    const getNowISO = () => new Date().toISOString();
+
+    
+    // Limpeza da câmera ao sair da página
+    useEffect(() => {
+        return () => {
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, []);
 
     // Validação: só números, 4-6 dígitos
     const handleMatriculaChange = (e) => {
@@ -66,6 +82,12 @@ const Home = () => {
         canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+        // 📌 Data/hora única do registro
+        const dataHoraRegistro = getNowISO();
+
+        // Captura da imagem
+        const imagemBase64 = canvas.toDataURL('image/jpeg');
+
         // Finaliza câmera
         streamRef.current.getTracks().forEach(track => track.stop());
         streamRef.current = null;
@@ -74,67 +96,57 @@ const Home = () => {
         setShowCamera(false);
         setIsLoading(true);
 
-        // Simulação de processamento
+        
+        // 📦 Payload FINAL para backend
+        const payload = {
+            matricula,
+            dataHora: dataHoraRegistro,
+            imagemBase64,
+        };
+
+        console.log('📦 Payload para backend:', payload);
+
+        // Simulação de envio
         setTimeout(() => {
-            const sucesso = Math.random() > 0.3;
             setIsLoading(false);
-
-            if (sucesso) {
-                toast.success('Sucesso! Registro realizado.');
-            } else {
-                toast.error('Falha! Tente novamente.');
-            }
-
+            toast.success('Registro realizado com sucesso!');
             setMatricula('');
-            setShowBiometriaButton(false);
         }, 3000);
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 p-4">
+            <h1 className="text-2xl font-bold mb-6 text-center">
                 Registro de Ponto - AZ Controle
             </h1>
 
-            {/* Passo 1 */}
             {!showBiometriaButton && !showCamera && !isLoading && (
-                <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm text-center">
-                    <label className="block text-sm font-medium mb-2 text-gray-700">
-                        Matrícula do Funcionário
-                    </label>
+                <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
                     <input
                         type="text"
                         value={matricula}
                         onChange={handleMatriculaChange}
                         className="w-full p-3 border rounded-lg mb-4"
-                        placeholder="Ex: 123456"
-                        maxLength="6"
+                        placeholder="Matrícula"
                     />
                     <button
                         onClick={handleEnviarMatricula}
-                        className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700"
+                        className="w-full bg-blue-600 text-white py-3 rounded-lg"
                     >
                         Enviar
                     </button>
                 </div>
             )}
 
-            {/* Passo 2 */}
             {showBiometriaButton && (
-                <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm text-center">
-                    <p className="mb-4 text-gray-600">
-                        Matrícula confirmada. Inicie a biometria facial.
-                    </p>
-                    <button
-                        onClick={handleIniciarBiometria}
-                        className="bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700"
-                    >
-                        Iniciar Biometria Facial
-                    </button>
-                </div>
+                <button
+                    onClick={handleIniciarBiometria}
+                    className="bg-green-600 text-white py-3 px-6 rounded-lg"
+                >
+                    Iniciar Biometria Facial
+                </button>
             )}
 
-            {/* Passo 3 */}
             {showCamera && (
                 <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm text-center">
                     <video
@@ -147,17 +159,16 @@ const Home = () => {
                     <canvas ref={canvasRef} className="hidden" />
                     <button
                         onClick={handleTirarFoto}
-                        className="bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700"
+                        className="bg-red-600 text-white py-3 px-6 rounded-lg"
                     >
                         Tirar Foto
                     </button>
                 </div>
             )}
 
-            {/* Passo 4 */}
             {isLoading && (
-                <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm text-center">
-                    <p className="mb-4 text-gray-600">Processando biometria...</p>
+                <div className="bg-white p-6 rounded-xl shadow-lg text-center">
+                    <p className="mb-4">Processando biometria...</p>
                     <Helix size="50" speed="2.0" color="#FFFC00" />
                 </div>
             )}
