@@ -30,7 +30,18 @@ const Home = () => {
     // Função para obter timestamp atual em ISO
     const getNowISO = () => new Date().toISOString();
 
-    
+    // Função de Normalização da matrícula (remove não numéricos e padroniza)
+    const normalizarMatricula = (valor) => {
+        if (valor === null || valor === undefined) return null;
+
+        const somenteNumeros = String(valor).replace(/\D/g, '');
+        if (!somenteNumeros) return null;
+
+        return somenteNumeros.padStart(5, '0');
+    };
+
+
+
     // Limpeza da câmera ao sair da página
     useEffect(() => {
         return () => {
@@ -43,13 +54,13 @@ const Home = () => {
     // Validação: só números, 4-6 dígitos
     const handleMatriculaChange = (e) => {
         const value = e.target.value.replace(/\D/g, ''); // Só números
-        if (value.length <= 6) setMatricula(value);
+        if (value.length <= 5) setMatricula(value);
     };
 
     // Passo 1: Função para enviar matrícula
     const handleEnviarMatricula = async () => {
-        if (matricula.length < 4) {
-            toast.error('Matrícula deve ter pelo menos 4 dígitos.');
+        if (matricula.length !== 5) {
+            toast.error('Matrícula deve ter 5 dígitos.');
             return;
         }
 
@@ -57,21 +68,22 @@ const Home = () => {
             setIsLoading(true);
 
             const funcionarios = await buscarFuncionarios();
+            const matriculaDigitada = normalizarMatricula(matricula);
 
-            const funcionarioEncontrado = funcionarios.find(
-                (f) => String(f.matricula) === String(matricula)
-            );
+            const funcionario = funcionarios.find(f => {
+                const matPlanilha = normalizarMatricula(f.Matricula);
+                return matPlanilha && matPlanilha === matriculaDigitada;
+            });
 
-            if (!funcionarioEncontrado) {
+            if (!funcionario) {
                 toast.error('Matrícula não encontrada. Procure o RH.');
-                setNomeFuncionario('');
                 return;
             }
 
             // ✅ Matrícula válida
-            setNomeFuncionario(funcionarioEncontrado.nome);
-            toast.success(`Seja bem-vindo, ${funcionarioEncontrado.nome}!`);
+            setNomeFuncionario(funcionario.Funcionario);
             setShowBiometriaButton(true);
+            toast.success(`Seja bem-vindo, ${funcionario.Funcionario}!`);
 
         } catch (error) {
             console.error(error);
@@ -109,6 +121,7 @@ const Home = () => {
         }
     }, [showCamera]);
 
+
     // Função para comparar datas (ignora horário)
     const isSameDay = (date1, date2) => {
         const d1 = new Date(date1);
@@ -137,6 +150,7 @@ const Home = () => {
 
             const agora = getNowISO();
             const imagemBase64 = canvas.toDataURL('image/jpeg');
+            const matriculaFormatada = normalizarMatricula(matricula);  
 
             // 🛑 Finaliza câmera
             streamRef.current.getTracks().forEach(track => track.stop());
@@ -148,7 +162,7 @@ const Home = () => {
 
             // 🔎 Registro do dia do funcionário
             const registroHoje = registros.find(r =>
-                String(r.Matricula) === String(matricula) &&
+                normalizarMatricula(r.Matricula) === matriculaFormatada &&
                 r.data_hora_inicio &&
                 isSameDay(r.data_hora_inicio, agora)
             );
@@ -157,7 +171,7 @@ const Home = () => {
             if (!registroHoje) {
                 // ✅ PRIMEIRO REGISTRO (ENTRADA)
                 await enviarRegistroPonto({
-                    Matricula: matricula,
+                    Matricula: matriculaFormatada,
                     data_hora_inicio: agora,
                     data_hora_fim: '',
                     foto_registro: imagemBase64,
@@ -197,21 +211,17 @@ const Home = () => {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 p-4">
-            <h1 className="text-2xl font-bold mb-6 text-center">
-                AZ Comunicação Visual Ltda
-            </h1>
+            <h1 className="text-2xl font-bold mb-6">AZ Comunicação Visual Ltda</h1>
 
             {!showBiometriaButton && !showCamera && !isLoading && (
                 <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
-                    <label className="block font-medium mb-2">
-                        Registro de Ponto
-                    </label>
+                    <label className="block font-medium mb-2">Registro de Ponto</label>
                     <input
                         type="text"
                         value={matricula}
                         onChange={handleMatriculaChange}
                         className="w-full p-3 border rounded-lg mb-4"
-                        placeholder="Matrícula"
+                        placeholder="Matrícula (00001)"
                     />
                     <button
                         onClick={handleEnviarMatricula}
@@ -223,7 +233,7 @@ const Home = () => {
             )}
 
             {showBiometriaButton && (
-                <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm text-center">
+                <div className="bg-white p-6 rounded-xl shadow-lg text-center">
                     <p className="text-lg">Seja bem-vindo,</p>
                     <p className="text-xl font-bold text-green-600 mb-4">
                         {nomeFuncionario}
@@ -238,14 +248,8 @@ const Home = () => {
             )}
 
             {showCamera && (
-                <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm text-center">
-                    <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="w-full mb-4 rounded-lg border"
-                    />
+                <div className="bg-white p-6 rounded-xl shadow-lg text-center">
+                    <video ref={videoRef} autoPlay muted className="w-full mb-4 rounded-lg" />
                     <canvas ref={canvasRef} className="hidden" />
                     <button
                         onClick={handleTirarFoto}

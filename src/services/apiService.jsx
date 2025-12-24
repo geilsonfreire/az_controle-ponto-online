@@ -1,4 +1,4 @@
-const API_URL = 'https://api.zerosheets.com/v1/hrb';
+const API_URL = 'https://api.zerosheets.com/v1/b7e';
 const API_TOKEN = import.meta.env.VITE_ZEROSHEETS_TOKEN;
 const FUNCIONARIOS_API_URL = 'https://api.zerosheets.com/v1/kke';
 const FUNCIONARIOS_TOKEN = import.meta.env.VITE_ZEROSHEETS_FUNCIONARIOS_TOKEN;
