@@ -154,7 +154,6 @@ export const uploadImagemImgBB = async (base64Image) => {
 
         return {
             url: data.data.url,
-            deleteUrl: data.data.delete_url,
         };
 
     } catch (error) {
