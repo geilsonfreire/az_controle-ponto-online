@@ -152,9 +152,7 @@ export const uploadImagemImgBB = async (base64Image) => {
 
         const data = await response.json();
 
-        return {
-            url: data.data.url,
-        };
+        return data.data.url;
 
     } catch (error) {
         console.error('🔥 Erro upload ImgBB:', error);

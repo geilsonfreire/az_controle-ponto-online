@@ -12,6 +12,7 @@ import {
     buscarFuncionarios,
     uploadImagemImgBB
 } from '../services/apiService';
+import { formatarDataParaPlanilha } from '../utils/dataFormat';
 
 
 const Home = () => {
@@ -158,7 +159,8 @@ const Home = () => {
             canvas.height = video.videoHeight;
             context.drawImage(video, 0, 0);
 
-            const agora = getNowISO();
+            const agoraISO = new Date().toISOString();
+            const agoraPlanilha = formatarDataParaPlanilha(new Date());
             const imagemBase64 = canvas.toDataURL('image/jpeg');
             const matriculaFormatada = normalizarMatricula(matricula);  
 
@@ -177,7 +179,7 @@ const Home = () => {
             const registroHoje = registros.find(r =>
                 normalizarMatricula(r.Matricula) === matriculaFormatada &&
                 r.data_hora_inicio &&
-                isSameDay(r.data_hora_inicio, agora)
+                isSameDay(r.data_hora_inicio, agoraISO)
             );
 
             // 🧠 DECISÃO
@@ -185,7 +187,7 @@ const Home = () => {
                 // ✅ PRIMEIRO REGISTRO (ENTRADA)
                 await enviarRegistroPonto({
                     Matricula: matriculaFormatada,
-                    data_hora_inicio: agora,
+                    data_hora_inicio: agoraPlanilha,
                     imgUrl_inicio: imgUrl,
                     data_hora_fim: '',
                     imgUrl_fim: '',
@@ -198,7 +200,7 @@ const Home = () => {
                 await atualizarRegistroPonto(
                     registroHoje._lineNumber,
                     {
-                        data_hora_fim: agora,
+                        data_hora_fim: agoraPlanilha,
                         imgUrl_fim: imgUrl,
                     }
                 );
