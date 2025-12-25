@@ -1,7 +1,8 @@
 const API_URL = 'https://api.zerosheets.com/v1/b7e';
-const API_TOKEN = import.meta.env.VITE_ZEROSHEETS_TOKEN;
 const FUNCIONARIOS_API_URL = 'https://api.zerosheets.com/v1/kke';
 const FUNCIONARIOS_TOKEN = import.meta.env.VITE_ZEROSHEETS_FUNCIONARIOS_TOKEN;
+const API_TOKEN = import.meta.env.VITE_ZEROSHEETS_TOKEN;
+const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY;
 
 
 // 🔍 Buscar funcionários
@@ -125,3 +126,39 @@ export const atualizarRegistroPonto = async (lineNumber, payload) => {
     }
 };
 
+
+// 📤 Upload imagem para ImgBB
+export const uploadImagemImgBB = async (base64Image) => {
+    try {
+        // Remove prefixo: data:image/jpeg;base64,
+        const imageBase64 = base64Image.split(',')[1];
+
+        const formData = new FormData();
+        formData.append('image', imageBase64);
+
+        const response = await fetch(
+            `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,
+            {
+                method: 'POST',
+                body: formData,
+            }
+        );
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Erro ImgBB:', errorText);
+            throw new Error('Erro ao enviar imagem');
+        }
+
+        const data = await response.json();
+
+        return {
+            url: data.data.url,
+            deleteUrl: data.data.delete_url,
+        };
+
+    } catch (error) {
+        console.error('🔥 Erro upload ImgBB:', error);
+        throw error;
+    }
+};

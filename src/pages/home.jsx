@@ -9,7 +9,8 @@ import {
     buscarRegistrosPonto, 
     enviarRegistroPonto, 
     atualizarRegistroPonto, 
-    buscarFuncionarios 
+    buscarFuncionarios,
+    uploadImagemImgBB
 } from '../services/apiService';
 
 
@@ -53,8 +54,17 @@ const Home = () => {
 
     // Validação: só números, 4-6 dígitos
     const handleMatriculaChange = (e) => {
-        const value = e.target.value.replace(/\D/g, ''); // Só números
-        if (value.length <= 5) setMatricula(value);
+        let value = e.target.value;
+
+        // Remove tudo que não for número
+        value = value.replace(/[^0-9]/g, '');
+
+        // Limita a 5 dígitos
+        if (value.length > 5) {
+            value = value.slice(0, 5);
+        }
+
+        setMatricula(value);
     };
 
     // Passo 1: Função para enviar matrícula
@@ -157,6 +167,9 @@ const Home = () => {
             streamRef.current = null;
             setShowCamera(false);
 
+            // ☁️ Upload da imagem
+            const imgUrl = await uploadImagemImgBB(imagemBase64);
+
             // 🔍 Buscar registros de ponto
             const registros = await buscarRegistrosPonto();
 
@@ -173,8 +186,9 @@ const Home = () => {
                 await enviarRegistroPonto({
                     Matricula: matriculaFormatada,
                     data_hora_inicio: agora,
+                    imgUrl_inicio: imgUrl,
                     data_hora_fim: '',
-                    foto_registro: imagemBase64,
+                    imgUrl_fim: '',
                 });
 
                 toast.success('Entrada registrada com sucesso!');
@@ -185,7 +199,7 @@ const Home = () => {
                     registroHoje._lineNumber,
                     {
                         data_hora_fim: agora,
-                        foto_registro: imagemBase64,
+                        imgUrl_fim: imgUrl,
                     }
                 );
 
