@@ -132,11 +132,23 @@ const Home = () => {
         }
     }, [showCamera]);
 
+    // Converte "17/01/2026 16:33:15" em Date válida
+    const parseDataPlanilha = (dataStr) => {
+        if (!dataStr) return null;
 
-    // Função para comparar datas (ignora horário)
-    const isSameDay = (date1, date2) => {
-        const d1 = new Date(date1);
-        const d2 = new Date(date2);
+        const [data, hora] = dataStr.split(' ');
+        const [dia, mes, ano] = data.split('/');
+
+        return new Date(`${ano}-${mes}-${dia}T${hora}`);
+    };
+
+    // Compara se duas datas são do mesmo dia
+    const isSameDay = (datePlanilha, dateAgora) => {
+        const d1 = parseDataPlanilha(datePlanilha);
+        const d2 = new Date(dateAgora);
+
+        if (!d1 || isNaN(d1)) return false;
+
         return (
             d1.getFullYear() === d2.getFullYear() &&
             d1.getMonth() === d2.getMonth() &&
