@@ -33,8 +33,7 @@ const Loading = () => {
         <div
             className="min-h-screen flex items-center justify-center"
             style={{
-                backgroundImage: `url(${Fundo})`,
-                backgroundSize: 'cover',
+                backgroundImage: 'linear-gradient(to right, #f83600 0%, #f9d423 100%)',
             }}
         >
             <div className="flex flex-col items-center gap-6 justify-center">
@@ -42,7 +41,7 @@ const Loading = () => {
                 <Helix
                     size="80"
                     speed="2.0"
-                    color="#FFFC00"
+                    color="#ffffff"
                 />
             </div>
             {/* modal sobreposto (aparece depois do timeout) */}
